@@ -1,5 +1,7 @@
 package com.example.Ecommerce_backend.service;
 
+import com.example.Ecommerce_backend.api.model.RegistationBody;
+import com.example.Ecommerce_backend.exception.UserAlreadyExistException;
 import com.example.Ecommerce_backend.model.Address;
 import com.example.Ecommerce_backend.model.LocalUser;
 import com.example.Ecommerce_backend.repository.LocalUserRepository;
@@ -17,11 +19,27 @@ public class LocalUserService {
     @Autowired
     private AddressService addressService;
 
-    public LocalUser createUser(LocalUser user) {
-        // Save user first without addresses
-        LocalUser savedUser = localUserRepository.save(user);
-        return savedUser;
+    public void createUser(RegistationBody registationBody) throws UserAlreadyExistException {
+
+        if(localUserRepository.findByEmail(registationBody.getEmail()).isPresent()
+                || localUserRepository.findByUsername(registationBody.getUsername()).isPresent()){
+      throw new UserAlreadyExistException();
+        }
+
+        LocalUser user = new LocalUser();
+        user.setUsername(registationBody.getUsername());
+        user.setEmail(registationBody.getEmail());
+        user.setFirstName(registationBody.getFirstName());
+        user.setLastName(registationBody.getLastName());
+
+        //todo hash password
+        user.setPassword(registationBody.getPassword());
+
+
+        localUserRepository.save(user);
     }
+
+
 
     public Optional<LocalUser> getUserById(String id) {
         return localUserRepository.findById(id);
@@ -31,9 +49,33 @@ public class LocalUserService {
         localUserRepository.deleteById(id);
     }
 
-    public LocalUser updateUser(LocalUser user) {
-        return localUserRepository.save(user);
+    public void updateUser(RegistationBody registationBody, String userId) throws UserAlreadyExistException {
+
+        if(localUserRepository.findByEmail(registationBody.getEmail()).isPresent()
+                || localUserRepository.findByUsername(registationBody.getUsername()).isPresent()){
+            throw new UserAlreadyExistException();
+        }
+        LocalUser user = localUserRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("LocalUser not found with id: " + userId));
+
+
+        user.setUsername(registationBody.getUsername());
+        user.setEmail(registationBody.getEmail());
+        user.setFirstName(registationBody.getFirstName());
+        user.setLastName(registationBody.getLastName());
+
+        //todo hash password
+        user.setPassword(registationBody.getPassword());
+
+
+        // Save the updated LocalUser (this cascades to save the Address as well)
+        localUserRepository.save(user);
+
     }
+
+
+
+
 
     public void addAddressToLocalUser(String userId, Address address) {
         Optional<LocalUser> optionalUser = localUserRepository.findById(userId);
