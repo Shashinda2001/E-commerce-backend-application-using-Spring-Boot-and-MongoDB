@@ -1,6 +1,10 @@
 package com.example.Ecommerce_backend.model;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,10 +16,19 @@ public class LocalUser {
 
     @Id
     private String id;
+
     private String username;
+
+
     private String email;
+
+
     private String password;
+
+
     private String firstName;
+
+
     private String lastName;
 
 //    @DBRef
