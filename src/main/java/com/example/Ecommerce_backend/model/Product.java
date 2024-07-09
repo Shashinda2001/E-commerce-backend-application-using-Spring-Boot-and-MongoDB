@@ -8,13 +8,15 @@ public class Product {
 
     @Id
     private String id;
+
     private String name;
     private String shortDescription;
     private String longDescription;
     private double price;
 
+    // Constructors, getters, and setters
+
     public Product() {
-        super();
     }
 
     public Product(String name, String shortDescription, String longDescription, double price) {
@@ -64,5 +66,16 @@ public class Product {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", shortDescription='" + shortDescription + '\'' +
+                ", longDescription='" + longDescription + '\'' +
+                ", price=" + price +
+                '}';
     }
 }
