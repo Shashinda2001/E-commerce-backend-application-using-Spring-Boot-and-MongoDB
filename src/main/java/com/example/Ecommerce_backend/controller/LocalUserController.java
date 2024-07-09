@@ -1,9 +1,14 @@
 package com.example.Ecommerce_backend.controller;
 
+import com.example.Ecommerce_backend.api.model.RegistationBody;
+import com.example.Ecommerce_backend.exception.UserAlreadyExistException;
 import com.example.Ecommerce_backend.model.Address;
 import com.example.Ecommerce_backend.model.LocalUser;
 import com.example.Ecommerce_backend.service.LocalUserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -17,9 +22,15 @@ public class LocalUserController {
     private LocalUserService localUserService;
 
     @PostMapping
-    public LocalUser createUser(@RequestBody LocalUser user) {
-        // Create user without addresses initially
-        return localUserService.createUser(user);
+    public ResponseEntity<String>  createUser(@Valid @RequestBody RegistationBody user) {
+         try {
+            localUserService.createUser(user);
+            return ResponseEntity.ok().build();
+         }
+         catch (UserAlreadyExistException ex){
+             return ResponseEntity.status(HttpStatus.CONFLICT).body("User with the given username or email already exists.");
+         }
+//        return localUserService.createUser(user);
     }
 
     @GetMapping("/{id}")
@@ -32,9 +43,16 @@ public class LocalUserController {
         localUserService.deleteUserById(id);
     }
 
-    @PutMapping
-    public LocalUser updateUser(@RequestBody LocalUser user) {
-        return localUserService.updateUser(user);
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateUser(@Valid @RequestBody RegistationBody user,@PathVariable String id) {
+        try {
+            localUserService.updateUser(user,id);
+            return ResponseEntity.ok().build();
+        }catch (UserAlreadyExistException ex){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("User with the given username or email already exists.");
+
+        }
+       // return localUserService.updateUser(user);
     }
 
     @PostMapping("/{userId}/addresses")
