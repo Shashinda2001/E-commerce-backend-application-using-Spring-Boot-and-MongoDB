@@ -1,5 +1,7 @@
 package com.example.Ecommerce_backend.controller;
 
+import com.example.Ecommerce_backend.api.model.LoginBody;
+import com.example.Ecommerce_backend.api.model.LoginResponse;
 import com.example.Ecommerce_backend.api.model.RegistationBody;
 import com.example.Ecommerce_backend.exception.UserAlreadyExistException;
 import com.example.Ecommerce_backend.model.Address;
@@ -31,6 +33,21 @@ public class LocalUserController {
              return ResponseEntity.status(HttpStatus.CONFLICT).body("User with the given username or email already exists.");
          }
 //        return localUserService.createUser(user);
+    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginBody loginBody){
+        String jwt= localUserService.loginUser(loginBody);
+
+        if(jwt==null){
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        else {
+            LoginResponse response =new LoginResponse();
+            response.setJwt(jwt);
+            return  ResponseEntity.ok(response);
+        }
     }
 
     @GetMapping("/{id}")
