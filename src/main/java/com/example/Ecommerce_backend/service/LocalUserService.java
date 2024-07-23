@@ -1,5 +1,6 @@
 package com.example.Ecommerce_backend.service;
 
+import com.example.Ecommerce_backend.api.model.LoginBody;
 import com.example.Ecommerce_backend.api.model.RegistationBody;
 import com.example.Ecommerce_backend.exception.UserAlreadyExistException;
 import com.example.Ecommerce_backend.model.Address;
@@ -15,9 +16,13 @@ public class LocalUserService {
 
     @Autowired
     private LocalUserRepository localUserRepository;
+    @Autowired
+    private EncryptionService encryptionService;
 
     @Autowired
     private AddressService addressService;
+    @Autowired
+    private JWTservice jwTservice;
 
     public void createUser(RegistationBody registationBody) throws UserAlreadyExistException {
 
@@ -33,13 +38,25 @@ public class LocalUserService {
         user.setLastName(registationBody.getLastName());
 
         //todo hash password
-        user.setPassword(registationBody.getPassword());
+        user.setPassword(encryptionService.encryptPassword(registationBody.getPassword()));
 
 
         localUserRepository.save(user);
     }
 
+     //LOGIN USER
+     public  String loginUser(LoginBody loginBody){
+        Optional<LocalUser> opUser= localUserRepository.findByUsername(loginBody.getUsername());
 
+        if(opUser.isPresent()){
+            LocalUser user =opUser.get();
+
+            if(encryptionService.verifyPassword(loginBody.getPassword(), user.getPassword())){
+               return jwTservice.generateJWT(user);
+            }
+        }
+        return  null;
+     }
 
     public Optional<LocalUser> getUserById(String id) {
         return localUserRepository.findById(id);
@@ -65,7 +82,7 @@ public class LocalUserService {
         user.setLastName(registationBody.getLastName());
 
         //todo hash password
-        user.setPassword(registationBody.getPassword());
+        user.setPassword(encryptionService.encryptPassword(registationBody.getPassword()));
 
 
         // Save the updated LocalUser (this cascades to save the Address as well)
